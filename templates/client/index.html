@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EdgePlugHub - 边缘设备插件浏览</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f5f7fa;
+            color: #333;
+        }
+        
+        .header {
+            background-color: #1a1f36;
+            color: white;
+            padding: 1.5rem;
+            text-align: center;
+        }
+        
+        .header h1 {
+            margin: 0;
+            font-size: 24px;
+        }
+        
+        .content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        .plugins-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+        
+        .plugin-card {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        
+        .plugin-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .plugin-icon {
+            height: 140px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #edf2fd;
+        }
+        
+        .plugin-icon img {
+            max-width: 80px;
+            max-height: 80px;
+        }
+        
+        .plugin-info {
+            padding: 1.5rem;
+        }
+        
+        .plugin-name {
+            font-size: 18px;
+            margin: 0 0 0.5rem 0;
+            color: #1a1f36;
+        }
+        
+        .plugin-description {
+            color: #5a6876;
+            margin: 0 0 1rem 0;
+            font-size: 14px;
+            line-height: 1.5;
+            height: 60px;
+            overflow: hidden;
+        }
+        
+        .plugin-meta {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            color: #697386;
+        }
+        
+        .plugin-category {
+            background-color: #edf2fd;
+            color: #4285f4;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+        }
+        
+        .plugin-action {
+            margin-top: 1rem;
+            text-align: center;
+        }
+        
+        .btn-view {
+            background-color: #4285f4;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+        }
+        
+        .btn-view:hover {
+            background-color: #3367d6;
+        }
+        
+        /* Messages */
+        .flash-message {
+            padding: 0.75rem 1rem;
+            border-radius: 4px;
+            margin-bottom: 1rem;
+        }
+        
+        .flash-success {
+            background-color: #e6f4ea;
+            color: #0f9d58;
+        }
+        
+        .flash-error {
+            background-color: #fdeded;
+            color: #f44336;
+        }
+        
+        /* Empty state */
+        .empty-state {
+            text-align: center;
+            padding: 3rem 0;
+        }
+        
+        .empty-state h2 {
+            color: #1a1f36;
+            margin-bottom: 1rem;
+        }
+        
+        .empty-state p {
+            color: #5a6876;
+            margin-bottom: 2rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>EdgePlugHub - 边缘设备插件浏览</h1>
+    </div>
+    
+    <div class="content">
+        <!-- Flash messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="flash-message flash-{{ category }}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+        
+        <h2>可用插件</h2>
+        
+        {% if plugins %}
+        <div class="plugins-grid">
+            {% for plugin in plugins %}
+            <div class="plugin-card">
+                <div class="plugin-icon">
+                    {% if plugin.icon_path %}
+                    <img src="{{ url_for('serve_upload', filename=plugin.icon_path) }}" alt="{{ plugin.name }}">
+                    {% else %}
+                    <div style="width: 80px; height: 80px; background-color: #ddd; border-radius: 8px; display: flex; justify-content: center; align-items: center;">
+                        <span style="font-size: 24px; color: #666;">{{ plugin.name[0] }}</span>
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="plugin-info">
+                    <h3 class="plugin-name">{{ plugin.name }}</h3>
+                    <p class="plugin-description">{{ plugin.short_description }}</p>
+                    <div class="plugin-meta">
+                        <span class="plugin-category">{{ plugin.category }}</span>
+                        <span>下载量: {{ plugin.downloads }}</span>
+                    </div>
+                    <div class="plugin-action">
+                        <a href="{{ url_for('client_plugin_detail', plugin_id=plugin.id) }}" class="btn-view">查看详情</a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <h2>暂无可用插件</h2>
+            <p>目前没有已批准的插件可供下载。</p>
+        </div>
+        {% endif %}
+    </div>
+</body>
+</html> 

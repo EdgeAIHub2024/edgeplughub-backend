@@ -1,0 +1,69 @@
+{% extends "admin/layout.html" %}
+
+{% block title %}编辑插件 - EdgePlugHub 管理后台{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h2>编辑插件</h2>
+    <p>修改插件信息</p>
+</div>
+
+<div class="card">
+    <form method="post">
+        <div class="form-group">
+            <label for="name">插件名称 <span style="color: #f44336;">*</span></label>
+            <input type="text" id="name" name="name" class="form-control" value="{{ plugin.name }}" required>
+        </div>
+        
+        <div class="form-group">
+            <label for="short_description">简短描述 <span style="color: #f44336;">*</span></label>
+            <input type="text" id="short_description" name="short_description" class="form-control" maxlength="255" value="{{ plugin.short_description }}" required>
+            <small style="color: #697386;">简短的一句话描述，最多255个字符</small>
+        </div>
+        
+        <div class="form-group">
+            <label for="description">详细描述 <span style="color: #f44336;">*</span></label>
+            <textarea id="description" name="description" class="form-control" rows="5" required>{{ plugin.description }}</textarea>
+        </div>
+        
+        <div class="form-group">
+            <label for="version">版本 <span style="color: #f44336;">*</span></label>
+            <input type="text" id="version" name="version" class="form-control" value="{{ plugin.version }}" required>
+        </div>
+        
+        <div class="form-group">
+            <label for="category">分类 <span style="color: #f44336;">*</span></label>
+            <select id="category" name="category" class="form-control" required>
+                <option value="" disabled>选择分类</option>
+                <option value="Computer Vision" {% if plugin.category == 'Computer Vision' %}selected{% endif %}>计算机视觉</option>
+                <option value="Audio Processing" {% if plugin.category == 'Audio Processing' %}selected{% endif %}>音频处理</option>
+                <option value="Natural Language" {% if plugin.category == 'Natural Language' %}selected{% endif %}>自然语言</option>
+                <option value="Utils" {% if plugin.category == 'Utils' %}selected{% endif %}>实用工具</option>
+            </select>
+        </div>
+        
+        <div class="form-group">
+            <label for="status">状态 <span style="color: #f44336;">*</span></label>
+            <select id="status" name="status" class="form-control" required>
+                <option value="pending" {% if plugin.status == 'pending' %}selected{% endif %}>待审核</option>
+                <option value="approved" {% if plugin.status == 'approved' %}selected{% endif %}>已批准</option>
+                <option value="rejected" {% if plugin.status == 'rejected' %}selected{% endif %}>已拒绝</option>
+            </select>
+        </div>
+        
+        {% if plugin.icon_path %}
+        <div class="form-group">
+            <label>当前图标</label>
+            <div style="margin-top: 0.5rem;">
+                <img src="{{ url_for('serve_upload', filename=plugin.icon_path) }}" alt="插件图标" style="max-width: 100px; max-height: 100px;">
+            </div>
+        </div>
+        {% endif %}
+        
+        <div style="display: flex; justify-content: space-between;">
+            <a href="{{ url_for('admin_plugins') }}" class="btn btn-secondary">返回插件列表</a>
+            <button type="submit" class="btn btn-primary">保存更改</button>
+        </div>
+    </form>
+</div>
+{% endblock %} 

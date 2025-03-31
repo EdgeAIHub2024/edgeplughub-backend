@@ -1,0 +1,70 @@
+{% extends "admin/layout.html" %}
+
+{% block title %}控制面板 - EdgePlugHub 管理后台{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h2>控制面板</h2>
+    <p>查看插件平台的整体统计信息</p>
+</div>
+
+<div class="row">
+    <div class="card">
+        <h3>插件统计</h3>
+        <div style="display: flex; justify-content: space-between; margin-top: 1.5rem;">
+            <div style="text-align: center; padding: 1rem; background-color: #e6f4ea; border-radius: 8px;">
+                <h4 style="margin: 0; color: #0f9d58;">已批准插件</h4>
+                <p style="font-size: 28px; font-weight: bold; margin: 0.5rem 0;">{{ plugins|selectattr('status', 'equalto', 'approved')|list|length }}</p>
+            </div>
+            
+            <div style="text-align: center; padding: 1rem; background-color: #fef7e0; border-radius: 8px;">
+                <h4 style="margin: 0; color: #f9ab00;">待审核插件</h4>
+                <p style="font-size: 28px; font-weight: bold; margin: 0.5rem 0;">{{ plugins|selectattr('status', 'equalto', 'pending')|list|length }}</p>
+            </div>
+            
+            <div style="text-align: center; padding: 1rem; background-color: #edf2fd; border-radius: 8px;">
+                <h4 style="margin: 0; color: #4285f4;">总下载量</h4>
+                <p style="font-size: 28px; font-weight: bold; margin: 0.5rem 0;">{{ plugins|sum(attribute='downloads') }}</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="card">
+        <h3>最受欢迎的插件</h3>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>插件名称</th>
+                    <th>分类</th>
+                    <th>下载量</th>
+                    <th>评分</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for plugin in plugins|sort(attribute='downloads', reverse=True)|list %}
+                {% if loop.index <= 5 %}
+                <tr>
+                    <td>{{ plugin.name }}</td>
+                    <td>{{ plugin.category }}</td>
+                    <td>{{ plugin.downloads }}</td>
+                    <td>{{ plugin.rating }}</td>
+                </tr>
+                {% endif %}
+                {% else %}
+                <tr>
+                    <td colspan="4" style="text-align: center;">暂无插件数据</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    
+    <div class="card">
+        <h3>快捷操作</h3>
+        <div style="display: flex; gap: 1rem; margin-top: 1rem;">
+            <a href="{{ url_for('admin_upload_plugin') }}" class="btn btn-primary">上传新插件</a>
+            <a href="{{ url_for('admin_plugins') }}" class="btn btn-secondary">管理所有插件</a>
+        </div>
+    </div>
+</div>
+{% endblock %} 

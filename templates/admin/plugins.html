@@ -1,0 +1,78 @@
+{% extends "admin/layout.html" %}
+
+{% block title %}插件管理 - EdgePlugHub 管理后台{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h2>插件管理</h2>
+    <p>查看和管理所有插件</p>
+</div>
+
+<div class="card">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+        <h3 style="margin: 0;">插件列表</h3>
+        <a href="{{ url_for('admin_upload_plugin') }}" class="btn btn-primary">上传新插件</a>
+    </div>
+    
+    {% if plugins %}
+    <table class="table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>名称</th>
+                <th>版本</th>
+                <th>分类</th>
+                <th>状态</th>
+                <th>下载量</th>
+                <th>上传时间</th>
+                <th>操作</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for plugin in plugins %}
+            <tr>
+                <td>{{ plugin.id[:8] }}</td>
+                <td>{{ plugin.name }}</td>
+                <td>{{ plugin.version }}</td>
+                <td>{{ plugin.category }}</td>
+                <td>
+                    {% if plugin.status == 'approved' %}
+                    <span style="color: #0f9d58;">已批准</span>
+                    {% elif plugin.status == 'pending' %}
+                    <span style="color: #f9ab00;">待审核</span>
+                    {% elif plugin.status == 'rejected' %}
+                    <span style="color: #f44336;">已拒绝</span>
+                    {% endif %}
+                </td>
+                <td>{{ plugin.downloads }}</td>
+                <td>{{ plugin.created_at.strftime('%Y-%m-%d') }}</td>
+                <td>
+                    <div style="display: flex; gap: 0.5rem;">
+                        <a href="{{ url_for('admin_edit_plugin', plugin_id=plugin.id) }}" class="btn btn-secondary" style="padding: 0.25rem 0.5rem; font-size: 0.8rem;">编辑</a>
+                        
+                        <form method="post" action="{{ url_for('admin_delete_plugin', plugin_id=plugin.id) }}" onsubmit="return confirm('确定要删除这个插件吗？此操作不可撤销。');" style="display: inline;">
+                            <button type="submit" class="btn btn-danger" style="padding: 0.25rem 0.5rem; font-size: 0.8rem;">删除</button>
+                        </form>
+                        
+                        {% if plugin.status == 'pending' %}
+                        <form method="post" action="{{ url_for('review_plugin', plugin_id=plugin.id) }}" style="display: inline;">
+                            <input type="hidden" name="status" value="approved">
+                            <button type="submit" class="btn btn-success" style="padding: 0.25rem 0.5rem; font-size: 0.8rem;">批准</button>
+                        </form>
+                        
+                        <form method="post" action="{{ url_for('review_plugin', plugin_id=plugin.id) }}" style="display: inline;">
+                            <input type="hidden" name="status" value="rejected">
+                            <button type="submit" class="btn btn-danger" style="padding: 0.25rem 0.5rem; font-size: 0.8rem;">拒绝</button>
+                        </form>
+                        {% endif %}
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p style="text-align: center; padding: 2rem 0;">暂无插件数据</p>
+    {% endif %}
+</div>
+{% endblock %} 

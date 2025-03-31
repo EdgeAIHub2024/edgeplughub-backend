@@ -1,0 +1,63 @@
+{% extends "admin/layout.html" %}
+
+{% block title %}上传插件 - EdgePlugHub 管理后台{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h2>上传新插件</h2>
+    <p>上传一个新的插件到平台</p>
+</div>
+
+<div class="card">
+    <form method="post" enctype="multipart/form-data">
+        <div class="form-group">
+            <label for="name">插件名称 <span style="color: #f44336;">*</span></label>
+            <input type="text" id="name" name="name" class="form-control" required>
+        </div>
+        
+        <div class="form-group">
+            <label for="short_description">简短描述 <span style="color: #f44336;">*</span></label>
+            <input type="text" id="short_description" name="short_description" class="form-control" maxlength="255" required>
+            <small style="color: #697386;">简短的一句话描述，最多255个字符</small>
+        </div>
+        
+        <div class="form-group">
+            <label for="description">详细描述 <span style="color: #f44336;">*</span></label>
+            <textarea id="description" name="description" class="form-control" rows="5" required></textarea>
+        </div>
+        
+        <div class="form-group">
+            <label for="version">版本 <span style="color: #f44336;">*</span></label>
+            <input type="text" id="version" name="version" class="form-control" placeholder="1.0.0" required>
+        </div>
+        
+        <div class="form-group">
+            <label for="category">分类 <span style="color: #f44336;">*</span></label>
+            <select id="category" name="category" class="form-control" required>
+                <option value="" disabled selected>选择分类</option>
+                <option value="Computer Vision">计算机视觉</option>
+                <option value="Audio Processing">音频处理</option>
+                <option value="Natural Language">自然语言</option>
+                <option value="Utils">实用工具</option>
+            </select>
+        </div>
+        
+        <div class="form-group">
+            <label for="icon">图标</label>
+            <input type="file" id="icon" name="icon" class="form-control" accept="image/png,image/jpeg,image/jpg">
+            <small style="color: #697386;">推荐尺寸：200x200 像素</small>
+        </div>
+        
+        <div class="form-group">
+            <label for="package">插件包 <span style="color: #f44336;">*</span></label>
+            <input type="file" id="package" name="package" class="form-control" accept=".zip" required>
+            <small style="color: #697386;">上传ZIP格式的插件包</small>
+        </div>
+        
+        <div style="display: flex; justify-content: space-between;">
+            <a href="{{ url_for('admin_plugins') }}" class="btn btn-secondary">返回插件列表</a>
+            <button type="submit" class="btn btn-primary">上传插件</button>
+        </div>
+    </form>
+</div>
+{% endblock %} 
