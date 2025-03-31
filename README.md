@@ -1,6 +1,6 @@
-# EdgeAIHub 后端服务
+# EdgePlugHub 后端服务
 
-EdgeAIHub后端服务，提供插件管理API和用户认证服务。
+EdgePlugHub后端服务，提供插件管理API和用户认证服务。
 
 ## 功能特点
 
@@ -15,7 +15,7 @@ EdgeAIHub后端服务，提供插件管理API和用户认证服务。
 
 ```bash
 # 克隆仓库
-git clone https://github.com/edgeaihub/edgeplughub-backend.git
+git clone https://github.com/EdgeAIHub2024/edgeplughub-backend.git
 cd edgeplughub-backend
 
 # 安装依赖
