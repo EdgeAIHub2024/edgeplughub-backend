@@ -4,6 +4,7 @@ from flask_jwt_extended import JWTManager
 from models import db, User, Plugin
 from routes.auth import auth_bp
 from routes.plugins import plugins_bp, review_plugin
+from routes.server import server_bp
 from dotenv import load_dotenv
 from flask_cors import CORS
 from werkzeug.security import check_password_hash
@@ -16,12 +17,45 @@ load_dotenv()
 app = Flask(__name__, static_folder='static')
 CORS(app)
 
-# 配置
+# 配置应用
 app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL', 'sqlite:///edgeplughub.db')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['JWT_SECRET_KEY'] = os.getenv('JWT_SECRET_KEY', 'dev-secret-key')
-app.config['UPLOAD_FOLDER'] = os.getenv('UPLOAD_FOLDER', 'uploads')
-app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'admin-secret-key')  # 为session添加密钥
+app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'dev_key')
+app.config['DATA_DIR'] = os.getenv('DATA_DIR', 'data')
+
+# 确保uploads目录是绝对路径，避免创建空的uploads目录
+web_dir = os.path.dirname(os.path.abspath(__file__))
+app.config['UPLOAD_FOLDER'] = os.getenv('UPLOAD_FOLDER', os.path.join(web_dir, 'uploads'))
+uploads_dir = app.config['UPLOAD_FOLDER']
+os.makedirs(uploads_dir, exist_ok=True)
+os.makedirs(os.path.join(uploads_dir, 'packages'), exist_ok=True)
+os.makedirs(os.path.join(uploads_dir, 'icons'), exist_ok=True)
+os.makedirs(os.path.join(uploads_dir, 'temp'), exist_ok=True)
+print(f"确保上传目录存在: {os.path.abspath(uploads_dir)}")
+print(f"目录内容: {os.listdir(uploads_dir)}")
+
+# 路由错误处理装饰器
+@app.errorhandler(500)
+def internal_server_error(e):
+    # 记录错误
+    app.logger.error(f"500 错误: {str(e)}")
+    # 检查是否是FileNotFoundError
+    if isinstance(e.original_exception, FileNotFoundError):
+        missing_path = str(e.original_exception).split("No such file or directory: '")[1].split("'")[0]
+        app.logger.error(f"文件未找到错误: {missing_path}")
+        # 尝试创建目录
+        try:
+            os.makedirs(os.path.dirname(missing_path), exist_ok=True)
+            app.logger.info(f"已创建目录: {os.path.dirname(missing_path)}")
+        except Exception as dir_error:
+            app.logger.error(f"创建目录失败: {str(dir_error)}")
+    
+    # 返回JSON格式的错误响应
+    return jsonify({
+        "error": "服务器内部错误",
+        "message": str(e),
+        "status": 500
+    }), 500
 
 # 初始化扩展
 db.init_app(app)
@@ -30,6 +64,7 @@ jwt = JWTManager(app)
 # 注册蓝图
 app.register_blueprint(auth_bp, url_prefix='/api/auth')
 app.register_blueprint(plugins_bp, url_prefix='/api/plugins')
+app.register_blueprint(server_bp, url_prefix='/api/server')
 
 # 静态文件服务
 @app.route('/static/<path:filename>')
@@ -43,7 +78,8 @@ def serve_upload(filename):
 # 首页
 @app.route('/')
 def home():
-    return redirect(url_for('client_page'))
+    plugins = Plugin.query.filter_by(status='approved').all()
+    return render_template('client/index.html', plugins=plugins)
 
 # 旧的API首页路由
 @app.route('/api')
@@ -283,19 +319,23 @@ os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 os.makedirs(os.path.join(app.config['UPLOAD_FOLDER'], 'icons'), exist_ok=True)
 os.makedirs(os.path.join(app.config['UPLOAD_FOLDER'], 'packages'), exist_ok=True)
 
-# 添加客户端页面路由
+# 保留客户端路由，但重定向到首页
 @app.route('/client')
 def client_page():
-    plugins = Plugin.query.filter_by(status='approved').all()
-    return render_template('client/index.html', plugins=plugins)
+    return redirect(url_for('home'))
 
-@app.route('/client/plugin/<plugin_id>')
-def client_plugin_detail(plugin_id):
+@app.route('/plugin/<plugin_id>')
+def plugin_detail(plugin_id):
     plugin = Plugin.query.get_or_404(plugin_id)
     if plugin.status != 'approved':
         flash('该插件不可用', 'error')
-        return redirect(url_for('client_page'))
+        return redirect(url_for('home'))
     return render_template('client/plugin_detail.html', plugin=plugin)
+
+# 客户端页面的旧路由，重定向到新路由
+@app.route('/client/plugin/<plugin_id>')
+def client_plugin_detail(plugin_id):
+    return redirect(url_for('plugin_detail', plugin_id=plugin_id))
 
 # 添加下载插件的路由
 @app.route('/download/<plugin_id>')
@@ -304,7 +344,7 @@ def download_plugin(plugin_id):
     
     if plugin.status != 'approved':
         flash('该插件不可用', 'error')
-        return redirect(url_for('client_page'))
+        return redirect(url_for('home'))
     
     # 增加下载计数
     plugin.downloads += 1
@@ -321,28 +361,28 @@ def download_plugin(plugin_id):
 create_initial_data()
 
 @app.route('/api/plugins', methods=['GET'])
-def get_plugins():
-    # ... existing code ...
+def api_get_plugins():
+    pass  # 实际代码将在此处实现
 
 @app.route('/api/plugins/<plugin_id>', methods=['GET'])
-def get_plugin_details(plugin_id):
-    # ... existing code ...
+def api_get_plugin_details(plugin_id):
+    pass  # 实际代码将在此处实现
 
 @app.route('/api/plugins/download/<plugin_id>', methods=['GET'])
-def download_plugin(plugin_id):
-    # ... existing code ...
+def api_download_plugin(plugin_id):
+    pass  # 实际代码将在此处实现
 
 @app.route('/api/plugins/upload', methods=['POST'])
-def upload_plugin():
-    # ... existing code ...
+def api_upload_plugin():
+    pass  # 实际代码将在此处实现
 
 @app.route('/api/auth/login', methods=['POST'])
-def login():
-    # ... existing code ...
+def api_login():
+    pass  # 实际代码将在此处实现
 
 @app.route('/api/auth/register', methods=['POST'])
-def register():
-    # ... existing code ...
+def api_register():
+    pass  # 实际代码将在此处实现
 
 if __name__ == '__main__':
     app.run(debug=True) 
