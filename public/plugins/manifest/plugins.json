@@ -1,0 +1,32 @@
+{
+  "plugins": [
+    {
+      "id": "face_detector",
+      "name": "人脸检测插件",
+      "type": "input",
+      "version": "1.0.0",
+      "description": "基于OpenCV和MediaPipe的人脸检测插件，支持多种检测方法",
+      "author": "EdgePlugHub",
+      "tags": ["face", "detection", "computer vision"],
+      "dependencies": ["opencv-python", "pillow", "numpy"],
+      "download_url": "/plugins/direct/input/face_detector.zip",
+      "icon": "/static/images/face_detection_icon.png",
+      "created_at": "2024-04-04",
+      "updated_at": "2024-04-04"
+    },
+    {
+      "id": "skin_analyzer",
+      "name": "肤色分析插件",
+      "type": "input",
+      "version": "1.0.0",
+      "description": "分析人脸图像中的肤色，包括肤色类型、色调和亮度",
+      "author": "EdgePlugHub",
+      "tags": ["skin", "color", "analysis", "beauty"],
+      "dependencies": ["opencv-python", "pillow", "numpy", "scikit-image", "matplotlib"],
+      "download_url": "/plugins/direct/input/skin_analyzer.zip",
+      "icon": "/static/images/skin_analyzer_icon.png",
+      "created_at": "2024-04-04",
+      "updated_at": "2024-04-04"
+    }
+  ]
+}

@@ -606,4 +606,61 @@ def get_plugin_download_info(plugin_id):
         current_app.logger.error(f"获取插件下载信息时出错: {str(e)}")
         import traceback
         current_app.logger.error(traceback.format_exc())
-        return jsonify({"msg": f"获取插件下载信息时出错: {str(e)}"}), 500 
+        return jsonify({"msg": f"获取插件下载信息时出错: {str(e)}"}), 500
+
+@plugins_bp.route('/direct/<path:plugin_path>', methods=['GET'])
+def direct_plugin_download(plugin_path):
+    """
+    直接从public/plugins目录下载插件
+    用于下载预置的插件包，如人脸检测和肤色分析插件
+    """
+    current_app.logger.info(f"请求直接下载插件: {plugin_path}")
+    
+    # 构建插件文件路径
+    web_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    plugins_dir = os.path.join(web_dir, 'public', 'plugins')
+    full_path = os.path.join(plugins_dir, plugin_path)
+    
+    current_app.logger.info(f"插件文件路径: {full_path}")
+    
+    # 检查文件是否存在
+    if not os.path.exists(full_path) or not os.path.isfile(full_path):
+        current_app.logger.error(f"插件文件不存在: {full_path}")
+        return jsonify({"error": "Plugin file not found"}), 404
+    
+    # 检查是否是.zip文件
+    if not full_path.endswith('.zip'):
+        current_app.logger.error(f"请求的文件不是zip文件: {full_path}")
+        return jsonify({"error": "Not a zip file"}), 400
+    
+    # 返回文件
+    current_app.logger.info(f"发送插件文件: {full_path}")
+    return send_file(full_path, as_attachment=True)
+
+@plugins_bp.route('/manifest', methods=['GET'])
+def get_plugins_manifest():
+    """
+    获取插件清单，提供可用插件的元数据
+    """
+    current_app.logger.info("请求插件清单")
+    
+    # 构建清单文件路径
+    web_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    manifest_path = os.path.join(web_dir, 'public', 'plugins', 'manifest', 'plugins.json')
+    
+    current_app.logger.info(f"插件清单路径: {manifest_path}")
+    
+    # 检查文件是否存在
+    if not os.path.exists(manifest_path) or not os.path.isfile(manifest_path):
+        current_app.logger.error(f"插件清单文件不存在: {manifest_path}")
+        return jsonify({"error": "Manifest file not found"}), 404
+    
+    # 读取清单文件
+    try:
+        with open(manifest_path, 'r') as f:
+            manifest = json.load(f)
+        current_app.logger.info("成功读取插件清单")
+        return jsonify(manifest)
+    except Exception as e:
+        current_app.logger.error(f"读取插件清单出错: {str(e)}")
+        return jsonify({"error": f"Failed to read manifest: {str(e)}"}), 500 
